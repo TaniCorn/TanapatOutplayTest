@@ -6,7 +6,7 @@ I'll be outlining my intial plans in the readme before getting to work on the de
 
 ## Work Log
 Just to keep an accurate track of the time I spent on each task and see where I'm at and when, I'll be keeping a work log.
-- 21/11/24 (2.5 hours) - Project setup, Github setup, ReadMe planning.
+- 21/11/24 (1.5 hours) - Project setup, Github setup, ReadMe planning.
 
 ## Github Standard
 I'll be completing the tasks one after the other, as such I'll be creating a branch for each task and merging it back into main when complete.
