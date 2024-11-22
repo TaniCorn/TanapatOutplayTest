@@ -2,8 +2,35 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Task1
+public class Task1 : MonoBehaviour
 {
+
+    public void Start()
+    {
+        float gravity = -9.8f;
+        float xPosition = 0;
+        //Testing if it can reach height
+        bool success = TryCalculateXPositionAtHeight(10.0f, new Vector2(3, 6), new Vector2(0, 2), gravity, 5, ref xPosition);
+        Debug.Log("Test 1H: " +  success + " with xPosition: " + xPosition);
+        
+        //Testing left movement
+        success = TryCalculateXPositionAtHeight(1.0f, new Vector2(3, 6), new Vector2(-1, 0), gravity, 5, ref xPosition);
+        Debug.Log("Test 2LM: " +  success + " with xPosition: " + xPosition);
+
+        //Testing right movement
+        success = TryCalculateXPositionAtHeight(1.0f, new Vector2(3, 6), new Vector2(1, 0), gravity, 5, ref xPosition);
+        Debug.Log("Test 3RM: " + success + " with xPosition: " + xPosition);
+
+        //Testing left bounce
+        success = TryCalculateXPositionAtHeight(1.0f, new Vector2(0.1f, 6), new Vector2(-1, 0), gravity, 5, ref xPosition);
+        Debug.Log("Test 4LB: " + success + " with xPosition: " + xPosition);
+
+        //Testing right bounce
+        success = TryCalculateXPositionAtHeight(1.0f, new Vector2(4.9f, 6), new Vector2(1, 0), gravity, 5, ref xPosition);
+        Debug.Log("Test 5RB: " + success + " with xPosition: " + xPosition);
+    }
+
+
     bool TryCalculateXPositionAtHeight(float h, Vector2 p, Vector2 v, float G, float w, ref float xPosition)
     {
         //See ReadME, G Issue. In short, no assumption is made that G will be negative.
