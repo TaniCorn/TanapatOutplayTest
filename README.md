@@ -7,6 +7,7 @@ I'll be outlining my intial plans in the readme before getting to work on the de
 ## Work Log
 Just to keep an accurate track of the time I spent on each task and see where I'm at and when, I'll be keeping a work log.
 - 21/11/24 (1.5 hours) - Project setup, Github setup, ReadMe planning.
+- 22/11/24 (2.5 hours) - Task 1, completed basic functionality. Theoretically works, however after putting in some simple test numbers, it does not appear to work.
 
 ## Github Standard
 I'll be completing the tasks one after the other, as such I'll be creating a branch for each task and merging it back into main when complete.
@@ -57,8 +58,25 @@ I'm going to assume the following
 - w - width of box
 - xPosition - the output position of where the ball will be on the next frame given, that the previous statements are true
 
+## Initial ideas
 Given the information, I think that this is primarily a mathematics problem. One where we're only meant to calculate xPosition when we reach the specified height, and only calculate it once. So it's not trying to predict every frame we are above specified height, just what position on the x axis we are at when we reach specified height. 
-I would normally assume we need to take into account the time of the simulation to figure out at what time we reach h, however it doens't appear to be that kind of question. Signing off tonight to come back to it another time.
+I would normally assume we need to take into account the time of the simulation to figure out at what time we reach h, however it doesn't appear to be that kind of question. Signing off tonight to come back to it another time.
+
+![20241122_090005](https://github.com/user-attachments/assets/7f019866-dd04-4755-a916-de5d7d99eb6d)
+
+I was initially implementing the mathematical equation for the dot product but then remembered Unity had a function for finding the angle between two vectors and just used that.
+
+## G Issue
+There was 1 issue however, which is that I had assumed G would always be down. But looking at it, there's no assumptions made on G. In this particular game, my assumption would be that G should always be negative.
+As I was just having a look at the problem if I continued down this line of thought, there was just too many things to consider, and a few too many assumptions that I would have to make. 
+I'm going to assume that for the purposes of this test, that G SHOULD be negative, but won't necessarily be passed in as negative.
+
+## Horizontal Displacement
+After going down the line of the Horizontal range, I realised I was missing a crucial step. I don't know when the y will be intersected. So having a look again at the vertical displacement, I was thinking I need a time of some sort, which led me to the old SUVAT formulas. Re-arranging it, gives me t, I just use the same formula to find the distance travelled when at time t, which means I never needed the maximum horizontal distance.
+Using the bounces as sort of reflective space, we can determine which way we are bouncing to using some simple maths, which helps us determine the final xDisplacement by making it relative to one of the walls, the 0 or the width.
+
+![20241122_090013](https://github.com/user-attachments/assets/76ae5b31-d4c9-4fe8-9186-9d27e450f1bf)
+
 
 # Task 2
 
