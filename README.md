@@ -8,6 +8,7 @@ I'll be outlining my intial plans in the readme before getting to work on the de
 Just to keep an accurate track of the time I spent on each task and see where I'm at and when, I'll be keeping a work log.
 - 21/11/24 (1.5 hours) - Project setup, Github setup, ReadMe planning.
 - 22/11/24 (2.5 hours) - Task 1, completed basic functionality. Theoretically works, however after putting in some simple test numbers, it does not appear to work.
+- 22/11/24 (2 hours) Task 1, fixed issues and happy with the solution
 
 ## Github Standard
 I'll be completing the tasks one after the other, as such I'll be creating a branch for each task and merging it back into main when complete.
@@ -43,6 +44,10 @@ Looking at the tasks,
 
 Given the above, it should take me 17 hours to complete the 3 tasks. So I may or may not be able to complete this test given how the week plays out.
 
+## Execution
+This is a retrospect after all the tasks
+
+- Task 1 (4.5 hours), I'm pretty happy with my final solution and my method of getting there. After a good initial plan of using max height to determine the initial condition. I was a bit too excited to use max x distance that it blindsided me for 20 minutes, until I realised it was the wrong solution. It took a bit of time to think about what I could use as my mind was avoiding *time*step, but realised that time is still a necessary factor and it popped into my head about finding the intersection point, I could use a linear movement equation. Using SUVAT I then was pretty happy with the theoretical solution, but as I expected there were bugs, but it didn't take too long to find out what was wrong, and it was just a matter of developing the solution to properly consider negative velocities.
 
 # Task 1
 Task 1 requires me to write an implementation for a reusable function with a given signature which will predict the position of a ball when it reaches the specified height h, for a 2D game about a ball bouncing within a box with no top and with an initial position and velocity, which is affected by gravity. If the ball hits the bottom, it won't bounce. The floor exists at X = 0.
@@ -77,6 +82,28 @@ Using the bounces as sort of reflective space, we can determine which way we are
 
 ![20241122_090013](https://github.com/user-attachments/assets/76ae5b31-d4c9-4fe8-9186-9d27e450f1bf)
 
+## Bugfixing
+
+After testing with 5 different simple scenarios for
+- Can't reach height
+- Move left no bounce
+- Move right no bounce
+- Move left bounce
+- Move right bounce
+
+I found that the numbers looked completely wrong. Going through with a breakpoint I found a few things
+1. My re-arranged SUVAT formula sign was wrong
+2. I didn't take into account negative x direction enough, which caused a negative bounce number
+3. The reflection sign didn't take into account which wall it bounced on first
+
+Solving the first one was easy enough to find, as time was negative.
+However the 2nd and 3rd one tied in together. As I was trying to figure out how I can work with the numbers, my diagram below shows my thought process of using the overall travelled distance and subtracting it from each border.
+
+![20241122_105436](https://github.com/user-attachments/assets/945c5de3-fb5c-4127-bf85-116ba8a3409c)
+
+I made a few if statements to figure our which wall we bounced on, but along the way I realised I could use the negative bounce number to infer that information instead, I could then subsequent get rid of the if statements and different calculations to figure out which wall to add or subtract on.
+
+Overall pretty happy with the solution, even happier that I managed to get it done within my time estimate. I'm not the happiest about how many comments there are, however I think that without them, coming back to this someone could get lost on what each step does. For very mathematical functions, I think this amount of commenting is appropriate.
 
 # Task 2
 
