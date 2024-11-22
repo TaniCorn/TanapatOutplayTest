@@ -29,15 +29,18 @@ public class Task1
 
         // s = u*t + 1/2 * a * t^2
         // Re-arranged formula for time
-        float displacement = h - p.y; // Imagining point now exists at y=0 and h gets shifted down the same amount
-        float t = (-v.y + Mathf.Sqrt(v.y*v.y + 2*G*displacement)) / G;
+        float displacement = h - p.y; // Imagining intial point now exists at y=0 and h gets shifted down the same amount
+        float t = (-v.y + Mathf.Sqrt(v.y*v.y + 2*G*displacement)) / G; // Get the time we hit h
 
         // How far along the x-axis have we moved when time = t
         // s = u*t
         float xDisplacement = v.x * t;
-        int boxesTravelled = Mathf.FloorToInt((xDisplacement + p.x / w));
-        float finalBounceDistance = xDisplacement - w*boxesTravelled;
-        int reflectionSign = boxesTravelled % 2;
+
+        // Determining the amount of times we've bounced and which wall we bounce on
+        int bounces = Mathf.FloorToInt((xDisplacement + p.x / w));
+        float finalBounceDistance = xDisplacement - w*bounces;
+
+        int reflectionSign = bounces % 2;
         //If we have a reflection sign of 1, then we are in the reflected space (We have bounced)
         if (reflectionSign == 0)
         {
@@ -47,6 +50,7 @@ public class Task1
         {
             xPosition = w - finalBounceDistance;
         }
+
         return true;
     }
 
