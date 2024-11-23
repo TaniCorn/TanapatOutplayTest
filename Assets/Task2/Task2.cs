@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -50,9 +51,59 @@ public class Board
 
     Move CalculateBestMoveForBoard()
     {
-        // Implement this function
+        // Note: Assumption that x = 0 is left, and y = 0 is the top.
 
+        // Make board information
+        int boardWidth = GetWidth();
+        int boardHeight = GetHeight();
+
+        JewelKind[,] JewelBoard = new JewelKind[boardWidth, boardHeight];
+
+        // Note: X axis first, y axis second
+        for (int y = 0; y < boardHeight; y++)
+        {
+            for (int x = 0; x < boardWidth; x++)
+            {
+                JewelBoard[x, y] = GetJewel(x, y);
+            }
+        }
+
+        int currentHighestPossiblePoints = 0;
+        Move bestMove = new Move();
+        Array directions = Enum.GetValues(typeof(MoveDirection));
+        
+        for (int y = 0; y < boardHeight; y++)
+        {
+            for (int x = 0; x < boardWidth; x++)
+            {
+                foreach (MoveDirection direction in directions)
+                {
+                    // Borders check
+                    bool leftCheck = (direction == MoveDirection.Left && x == 0);
+                    bool rightCheck = (direction == MoveDirection.Right && x == boardWidth-1);
+                    bool upCheck = (direction == MoveDirection.Up && y == 0);
+                    bool downCheck = (direction == MoveDirection.Down && x == boardHeight-1);
+
+                    if (leftCheck || rightCheck || upCheck || downCheck)
+                    {
+                        continue;
+                    }
+
+                    // Check connected gems 
+                    int connectedGemCount = /*Check Connection*/ 0;
+
+                    if (connectedGemCount > currentHighestPossiblePoints)
+                    {
+                        currentHighestPossiblePoints = connectedGemCount;
+                        bestMove.x = x;
+                        bestMove.y = y;
+                        bestMove.direction = direction;
+                    }
+                }
+            }
+        }
 
         return new Move();
     }
+
 }
