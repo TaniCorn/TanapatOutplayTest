@@ -78,6 +78,7 @@ public class Board
             {
                 foreach (MoveDirection direction in directions)
                 {
+                    // Can we move current gem in direction
                     // Borders check
                     bool leftCheck = (direction == MoveDirection.Left && x == 0);
                     bool rightCheck = (direction == MoveDirection.Right && x == boardWidth-1);
@@ -89,6 +90,7 @@ public class Board
                         continue;
                     }
 
+                    // Since gem could be moved in this direction, check chain of gems
                     // Check connected gems 
                     int connectedGemCount = /*Check Connection*/ 0;
 
@@ -106,4 +108,121 @@ public class Board
         return new Move();
     }
 
+    int GetPointsFromProjectedMove(Move moveToExecute,  JewelKind[,] jewelBoard)
+    {
+        int totalPoints = 1;
+        int boardWidth = GetWidth();
+        int boardHeight = GetHeight();
+        JewelKind desiredJewel = jewelBoard[moveToExecute.x, moveToExecute.y];
+
+        // Setup first node after moving gem
+        Vector2Int startPosition = NewPositionAfterMove(moveToExecute);
+        MoveDirection backwardsDirection = GetOppositeDirection(moveToExecute.direction);
+        KeyValuePair<Vector2Int, MoveDirection> currentNode = new KeyValuePair<Vector2Int, MoveDirection>(startPosition, backwardsDirection);
+
+        // Using a Queue and Set of to search and visited nodes
+        Queue<KeyValuePair<Vector2Int, MoveDirection>> searchQueue = new Queue<KeyValuePair<Vector2Int, MoveDirection>>();
+        HashSet<Vector2Int> visitedNodes = new HashSet<Vector2Int>();
+        searchQueue.Enqueue(currentNode);
+
+        //Implement tree search algorithm
+        foreach (KeyValuePair<Vector2Int, MoveDirection> node in searchQueue)
+        {
+            Array directions = Enum.GetValues(typeof(MoveDirection));
+            int x = node.Key.x;
+            int y = node.Key.y;
+
+            foreach (MoveDirection direction in directions)
+            {
+                if (direction == node.Value)
+                {
+                    continue;
+                }
+                bool leftCheck = (direction == MoveDirection.Left && x == 0);
+                bool rightCheck = (direction == MoveDirection.Right && x == boardWidth - 1);
+                bool upCheck = (direction == MoveDirection.Up && y == 0);
+                bool downCheck = (direction == MoveDirection.Down && x == boardHeight - 1);
+
+                if (leftCheck || rightCheck || upCheck || downCheck)
+                {
+                    continue;
+                }
+
+                Vector2Int position = NewPositionAfterMove(direction, x, y);
+
+                if (jewelBoard[position.x, position.y] == desiredJewel)
+                {
+                    if (visitedNodes.Add(position))
+                    {
+                        KeyValuePair<Vector2Int , MoveDirection> newNode = new KeyValuePair<Vector2Int, MoveDirection> (position, GetOppositeDirection(direction));
+                        searchQueue.Enqueue(newNode);
+                        totalPoints++;
+                    }
+                }
+            }
+            searchQueue.Dequeue();
+        }
+        return totalPoints;
+    }
+
+    MoveDirection GetOppositeDirection(MoveDirection direction)
+    {
+        switch (direction)
+        {
+            case MoveDirection.Left:
+                return MoveDirection.Right;
+            case MoveDirection.Right:
+                return MoveDirection.Left;
+            case MoveDirection.Up:
+                return MoveDirection.Down;
+            case MoveDirection.Down:
+                return MoveDirection.Up;
+            default:
+                throw new ArgumentException("Invalid MoveDirection given");
+        }
+    }
+
+    Vector2Int NewPositionAfterMove(Move move)
+    {
+        Vector2Int position = new Vector2Int(move.x, move.y);
+        switch (move.direction)
+        {
+            case MoveDirection.Left:
+                position.x--;
+                return position;
+            case MoveDirection.Right:
+                position.x++;
+                return position;
+            case MoveDirection.Up:
+                position.y--;
+                return position;
+            case MoveDirection.Down:
+                position.y++;
+                return position;
+            default:
+                throw new ArgumentException("Invalid MoveDirection given");
+        }
+    }
+
+    Vector2Int NewPositionAfterMove(MoveDirection direction, int x, int y)
+    {
+        Vector2Int position = new Vector2Int(x, y);
+        switch (direction)
+        {
+            case MoveDirection.Left:
+                position.x--;
+                return position;
+            case MoveDirection.Right:
+                position.x++;
+                return position;
+            case MoveDirection.Up:
+                position.y--;
+                return position;
+            case MoveDirection.Down:
+                position.y++;
+                return position;
+            default:
+                throw new ArgumentException("Invalid MoveDirection given");
+        }
+    }
 }
