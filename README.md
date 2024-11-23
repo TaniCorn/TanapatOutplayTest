@@ -9,6 +9,7 @@ Just to keep an accurate track of the time I spent on each task and see where I'
 - 21/11/24 (1.5 hours) - Project setup, Github setup, ReadMe planning.
 - 22/11/24 (2.5 hours) - Task 1, completed basic functionality. Theoretically works, however after putting in some simple test numbers, it does not appear to work.
 - 22/11/24 (2 hours) Task 1, fixed issues and happy with the solution
+- 23/11/24 (1 hour) Task 2, figuring out solution and planning
 
 ## Github Standard
 I'll be completing the tasks one after the other, as such I'll be creating a branch for each task and merging it back into main when complete.
@@ -106,6 +107,59 @@ I made a few if statements to figure our which wall we bounced on, but along the
 Overall pretty happy with the solution, even happier that I managed to get it done within my time estimate. I'm not the happiest about how many comments there are, however I think that without them, coming back to this someone could get lost on what each step does. For very mathematical functions, I think this amount of commenting is appropriate.
 
 # Task 2
+Task 2 requires me to write an implementation for a function which returns the current best move for a match 3 board. The main issue I'm seeing here is how I'm interpreting this question
+1. The implementation requires the most immediate best move, and has no regard for future moves.
+2. The implementation requires the best move for the best gains, requiring it to look x events into the future.
+
+In the rules, it does not say empty gems get replaced, but it is common for match 3 games for gems to fall to empty slots, so I can assume 1 of 3 things
+a. It works like a standard match 3 game where gems fall and new random gems get placed above
+b. Gems do not get replaced and are empty, and therefore there is a limited amount of moves
+c. The assumption is that it's a clean board each time this function runs, and we do not care about about standard games
+
+The reason why this is important is that it tells me what kind of algorithm to make.
+If assumption 'c' is correct, then '1' is the correct path for implementation. 
+If assumption 'b' is correct, then there is a best chain of moves for the entire game and '2' would be ideal
+If assumption 'a' is correct, then there is a a best chain of moves, that may get overwritten with new gem information, so '2' is ideal, but '1' is fine
+
+I would like to send an email just to clarify, but it's the weekend. Based on this rule '... best move for a given board is ths the one ethat will remove the most jewels.', regarding the given board. I believe that it means to treat the board as a new one each time this function is ran. So I will be going with teh assumption of c, and just implement a simple algorithm that has no regard for future moves.
+
+The rules of Match 3:
+- Pairs of jewels adjacent vertically and horizontally can be swapped.
+- You can only swap jewels when this will result in a match being created.
+- A match happens when there are 3 or more jewels of the same kind adjacent vertically or horizontally.
+- All jewels involved in matches are set to JewelKind::Empty after each move.
+- One point is given for each jewel that has been removed. The best move for a given board is thus the one that will remove the most jewels.
+- The initial board state contains no matches; therefore, swapping jewels is the only way matches can be created.
+
+# Initial Ideas
+I'm immediately thinking of a tree search algorithm for this, but for now I'll just see if I can break down the problem.
+
+I don't think I can really avoid having to check every single gem as a first loop, technically you can avoid it by not checking gems you will swap with for other gems, but I think that might just increase code complexity for little performance gain.
+Then for every gem, we have to check each move it can make and if it's possible. Here we could immediately try to calculate the points for that move, or save that gem move as a valid one to come back to later.
+The gem search has to take into account all connected gems to try and add them up to make the overall points. The hard part here is to make sure you don't add a previous gem. Like a loop.
+Then compare which gem move has the most points.
+
+I'll go with immediate calculations as it feels pointless to check is 3 connected, abandon it, then continue the search again later.
+
+```
+1. Go through all gems on the board
+2. Go through all moves that a gem can take, for each gem on the board
+3. Calculate the points gained from that move
+4. Find the best move on the board for the gem
+
+for (gem : gems)
+ for (moves : gem)
+  for (movedirection : moves)
+   fake Move in direction
+   check connected gem count in all directions except for 'movedirection'
+   if (connectedgemcount > currentbestcount)
+    currentbestcount = connectedgemcount
+    save Move
+   end if
+  end loop
+ end loop
+end loop
+```
 
 
 # Task 3
