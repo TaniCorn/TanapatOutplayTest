@@ -10,6 +10,8 @@ Just to keep an accurate track of the time I spent on each task and see where I'
 - 22/11/24 (2.5 hours) - Task 1, completed basic functionality. Theoretically works, however after putting in some simple test numbers, it does not appear to work.
 - 22/11/24 (2 hours) Task 1, fixed issues and happy with the solution
 - 23/11/24 (1 hour) Task 2, figuring out solution and planning
+- 23/11/24 (1.5 hours) Task 2, implementing the board searching and putting placeholder functionality for the tree search
+- 23/11/24 (1.5 hours) Task 2, thinking of how to best implement the tree search, and then implementing said tree
 
 ## Github Standard
 I'll be completing the tasks one after the other, as such I'll be creating a branch for each task and merging it back into main when complete.
@@ -112,13 +114,18 @@ Task 2 requires me to write an implementation for a function which returns the c
 2. The implementation requires the best move for the best gains, requiring it to look x events into the future.
 
 In the rules, it does not say empty gems get replaced, but it is common for match 3 games for gems to fall to empty slots, so I can assume 1 of 3 things
-a. It works like a standard match 3 game where gems fall and new random gems get placed above
-b. Gems do not get replaced and are empty, and therefore there is a limited amount of moves
-c. The assumption is that it's a clean board each time this function runs, and we do not care about about standard games
+
+1. a. It works like a standard match 3 game where gems fall and new random gems get placed above
+2. b. Gems do not get replaced and are empty, and therefore there is a limited amount of moves
+3. c. The assumption is that it's a clean board each time this function runs, and we do not care about about standard games
+
 
 The reason why this is important is that it tells me what kind of algorithm to make.
+
 If assumption 'c' is correct, then '1' is the correct path for implementation. 
+
 If assumption 'b' is correct, then there is a best chain of moves for the entire game and '2' would be ideal
+
 If assumption 'a' is correct, then there is a a best chain of moves, that may get overwritten with new gem information, so '2' is ideal, but '1' is fine
 
 I would like to send an email just to clarify, but it's the weekend. Based on this rule '... best move for a given board is ths the one ethat will remove the most jewels.', regarding the given board. I believe that it means to treat the board as a new one each time this function is ran. So I will be going with teh assumption of c, and just implement a simple algorithm that has no regard for future moves.
@@ -131,7 +138,7 @@ The rules of Match 3:
 - One point is given for each jewel that has been removed. The best move for a given board is thus the one that will remove the most jewels.
 - The initial board state contains no matches; therefore, swapping jewels is the only way matches can be created.
 
-# Initial Ideas
+## Initial Ideas
 I'm immediately thinking of a tree search algorithm for this, but for now I'll just see if I can break down the problem.
 
 I don't think I can really avoid having to check every single gem as a first loop, technically you can avoid it by not checking gems you will swap with for other gems, but I think that might just increase code complexity for little performance gain.
@@ -160,6 +167,33 @@ for (gem : gems)
  end loop
 end loop
 ```
+## Board Info
+One thing I didn't immediately consider was how to access the board info. I could access it each time with GetJewel, however I don't like how that may be very innefficient with many accesses.
+So I thought a simple multi-dimensional array that gets filled initially would be great as I think it would make for better cache hits down the line. 
 
+## Axis assumptions
+Unfortunately it's not mentioned where the x and y axis is aligned. I'll be going with the assumption that x = 0 is left, and y = 0 is the top.
+
+## Tree searching algorithm
+Currently I'm contemplating between doing a breadth vs depth first search algorithm. However I don't think it makes too much of a difference, and personally I would prefer to do a breadth first search as that makes the most sense to me in this scenario for coding.
+
+Next comes the question of what data structure I want to implement it with. I'm initially thinking a set to ensure no duplicates, this is an easy way to ensure we don't double search things.
+
+```
+Add initial node to queue
+foreach queue node
+ Search all other directions except for direction that we came through
+ foreach neighbour
+  if node neighbours matches desired gem
+   try to add node neighbour to set
+   if (adding node neighbour to set is successful)
+    add node neighbour to queue //for searching
+    add one point
+   end if
+  end if
+ end neighbour loop
+pop queue
+end queue loop
+```
 
 # Task 3
