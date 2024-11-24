@@ -138,17 +138,21 @@ public class Board
     /// <summary>
     /// Checks connected gems from the 1 gem that is moving, and returns as points. Does not actually move gem.
     /// </summary>
-    int GetPointsFromConnectedGem(Move moveToExecute, JewelKind[,] jewelBoard)
+    int GetPointsFromConnectedGem(Move gemMove, JewelKind[,] jewelBoard)
     {
         int totalPoints = 1;
         int boardWidth = GetWidth();
         int boardHeight = GetHeight();
         Array directions = Enum.GetValues(typeof(MoveDirection));
-        JewelKind gemKind = jewelBoard[moveToExecute.x, moveToExecute.y];
-
-        // Setup first node after moving gem
-        Vector2Int startPosition = NewPositionAfterMove(moveToExecute);
-        MoveDirection backwardsDirection = GetOppositeDirection(moveToExecute.direction);
+        JewelKind gemKind = jewelBoard[gemMove.x, gemMove.y];
+        if (gemKind == JewelKind.Empty)
+        {
+            return 0;
+        }
+        
+        // Setup first node as if Move executed
+        Vector2Int startPosition = NewPositionAfterMove(gemMove);
+        MoveDirection backwardsDirection = GetOppositeDirection(gemMove.direction);
         KeyValuePair<Vector2Int, MoveDirection> currentNode = new KeyValuePair<Vector2Int, MoveDirection>(startPosition, backwardsDirection);
 
         // Using a Queue and Set of to search and visited nodes
