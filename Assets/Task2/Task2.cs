@@ -1,12 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
+using UnityEditor.Experimental.GraphView;
 using UnityEditor.Search;
 using UnityEngine;
 
 public class Board
 {
-    const int minimumConnections = 2;
+    const int connectedGemsRequiredToMatch = 3;
 
     enum JewelKind
     {
@@ -54,14 +56,14 @@ public class Board
     Move CalculateBestMoveForBoard()
     {
         // Note: Assumption that x = 0 is left, and y = 0 is the top.
-
-        // Make board information
+        // Note: for loops have X axis traversed first, y axis second
+        Move bestMove = new Move();
+        Array directions = Enum.GetValues(typeof(MoveDirection));
         int boardWidth = GetWidth();
         int boardHeight = GetHeight();
-
         JewelKind[,] jewelBoard = new JewelKind[boardWidth, boardHeight];
 
-        // Note: X axis first, y axis second
+        // Make board information
         for (int y = 0; y < boardHeight; y++)
         {
             for (int x = 0; x < boardWidth; x++)
@@ -70,36 +72,29 @@ public class Board
             }
         }
 
-        int currentHighestPossiblePoints = minimumConnections;
-        Move bestMove = new Move();
-        Array directions = Enum.GetValues(typeof(MoveDirection));
-        
+        int currentHighestPossiblePoints = 0;
+
         // Check all gems in board
         for (int y = 0; y < boardHeight; y++)
         {
             for (int x = 0; x < boardWidth; x++)
             {
+                Move currentMove;
+                currentMove.x = x;
+                currentMove.y = y;
+
                 // Check all directions gem can take
                 foreach (MoveDirection direction in directions)
                 {
-                    // If we're trying to move towards board border, skip direction
-                    bool leftCheck = (direction == MoveDirection.Left && x == 0);
-                    bool rightCheck = (direction == MoveDirection.Right && x == boardWidth-1);
-                    bool upCheck = (direction == MoveDirection.Up && y == 0);
-                    bool downCheck = (direction == MoveDirection.Down && y == boardHeight-1);
-                    if (leftCheck || rightCheck || upCheck || downCheck)
+                    currentMove.direction = direction;
+
+                    if (IsMoveOutOfBounds(direction, currentMove.x, currentMove.y, boardWidth, boardHeight))
                     {
                         continue;
                     }
 
-                    // Since gem could be moved in this direction, check chain of gems for this Move
-                    Move currentMove = new Move();
-                    currentMove.x = x;
-                    currentMove.y = y;
-                    currentMove.direction = direction;
+                    // Get points gained from move, If points are higher, make new best move
                     int totalPointsFromMove = GetPointsFromProjectedMove(currentMove,jewelBoard);
-
-                    // If points are higher, make new best move
                     if (totalPointsFromMove > currentHighestPossiblePoints)
                     {
                         currentHighestPossiblePoints = totalPointsFromMove;
@@ -114,36 +109,42 @@ public class Board
         return bestMove;
     }
 
-    int GetPointsFromProjectedMove(Move moveToExecute,  JewelKind[,] jewelBoard)
+    /// <summary>
+    /// Get overall points from move, does not actually execute the move.
+    /// </summary>
+    int GetPointsFromProjectedMove(Move primaryMove,  JewelKind[,] jewelBoard)
     {
-        // First Gem
-        JewelKind gemKind = jewelBoard[moveToExecute.x, moveToExecute.y];
+        // Function will check points gained from primary move, and then check points gained from the gem swapped with primary move
+        // Does not actually move the gem, function pretends gem is moved, and just doesn't check direction it came from
 
-        // Create secondary gem movement
-        Vector2Int otherGemPosition = NewPositionAfterMove(moveToExecute.direction,moveToExecute.x, moveToExecute.y);
-        JewelKind otherGemKind = jewelBoard[otherGemPosition.x, otherGemPosition.y];
-        Move otherGemMovement = new Move();
-        otherGemMovement.x = otherGemPosition.x;
-        otherGemMovement.y = otherGemPosition.y;
-        otherGemMovement.direction = GetOppositeDirection(moveToExecute.direction);
+        Vector2Int otherGemPosition = NewPositionAfterMove(primaryMove);
+        Move secondaryMove;
+        secondaryMove.x = otherGemPosition.x;
+        secondaryMove.y = otherGemPosition.y;
+        secondaryMove.direction = GetOppositeDirection(primaryMove.direction);
 
-        // Find connected gems to primary gem, and then secondary gem movement
-        int connectedGemCount = GetPointsFromConnectedGem(moveToExecute, gemKind, jewelBoard);
-        int otherGemCount = GetPointsFromConnectedGem(otherGemMovement, otherGemKind, jewelBoard);
+        // Get points from primary gem and secondary gem movement
+        int connectedGemCount = GetPointsFromConnectedGem(primaryMove, jewelBoard);
+        int otherGemCount = GetPointsFromConnectedGem(secondaryMove, jewelBoard);
 
         // Add gems if they have made a valid connection
         int totalPointsGainedFromMove = 0;
-        totalPointsGainedFromMove += otherGemCount > minimumConnections ? otherGemCount : 0;
-        totalPointsGainedFromMove += connectedGemCount > minimumConnections ? connectedGemCount : 0;
+        totalPointsGainedFromMove += otherGemCount >= connectedGemsRequiredToMatch ? otherGemCount : 0;
+        totalPointsGainedFromMove += connectedGemCount >= connectedGemsRequiredToMatch ? connectedGemCount : 0;
 
         return totalPointsGainedFromMove;
     }
 
-    int GetPointsFromConnectedGem(Move moveToExecute, JewelKind kind , JewelKind[,] jewelBoard)
+    /// <summary>
+    /// Checks connected gems from the 1 gem that is moving, and returns as points. Does not actually move gem.
+    /// </summary>
+    int GetPointsFromConnectedGem(Move moveToExecute, JewelKind[,] jewelBoard)
     {
         int totalPoints = 1;
         int boardWidth = GetWidth();
         int boardHeight = GetHeight();
+        Array directions = Enum.GetValues(typeof(MoveDirection));
+        JewelKind gemKind = jewelBoard[moveToExecute.x, moveToExecute.y];
 
         // Setup first node after moving gem
         Vector2Int startPosition = NewPositionAfterMove(moveToExecute);
@@ -160,32 +161,22 @@ public class Board
         while (searchQueue.Count != 0)
         {
             KeyValuePair<Vector2Int, MoveDirection> node = searchQueue.Dequeue();
-            Array directions = Enum.GetValues(typeof(MoveDirection));
-            int x = node.Key.x;
-            int y = node.Key.y;
+            Move currentMove;
+            currentMove.x = node.Key.x;
+            currentMove.y = node.Key.y;
 
             foreach (MoveDirection direction in directions)
             {
-                //Don't move in direction travelled from
-                MoveDirection directionTravelled = node.Value;
-                if (direction == directionTravelled)
-                {
-                    continue;
-                }
+                currentMove.direction = node.Value;
 
-                // If we're trying to move towards board border, skip direction
-                bool leftCheck = (direction == MoveDirection.Left && x == 0);
-                bool rightCheck = (direction == MoveDirection.Right && x == boardWidth - 1);
-                bool upCheck = (direction == MoveDirection.Up && y == 0);
-                bool downCheck = (direction == MoveDirection.Down && y == boardHeight - 1);
-                if (leftCheck || rightCheck || upCheck || downCheck)
+                if (direction == currentMove.direction || IsMoveOutOfBounds(direction, currentMove.x, currentMove.y, boardWidth, boardHeight))
                 {
                     continue;
                 }
 
                 // Check connected gem is of same type as root
-                Vector2Int positionOfGemToCheck = NewPositionAfterMove(direction, x, y);
-                if (jewelBoard[positionOfGemToCheck.x, positionOfGemToCheck.y] == kind)
+                Vector2Int positionOfGemToCheck = NewPositionAfterMove(direction, currentMove.x, currentMove.y);
+                if (jewelBoard[positionOfGemToCheck.x, positionOfGemToCheck.y] == gemKind)
                 {
                     // Add gem to queue if not already searched
                     if (visitedNodes.Add(positionOfGemToCheck))
@@ -259,5 +250,14 @@ public class Board
             default:
                 throw new ArgumentException("Invalid MoveDirection given");
         }
+    }
+
+    bool IsMoveOutOfBounds(MoveDirection direction, int x, int y, int boardWidth, int boardHeight)
+    {
+        bool leftCheck = (direction == MoveDirection.Left && x == 0);
+        bool rightCheck = (direction == MoveDirection.Right && x == boardWidth - 1);
+        bool upCheck = (direction == MoveDirection.Up && y == 0);
+        bool downCheck = (direction == MoveDirection.Down && y == boardHeight - 1);
+        return (leftCheck || rightCheck || upCheck || downCheck);
     }
 }
