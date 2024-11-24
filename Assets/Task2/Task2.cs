@@ -57,14 +57,14 @@ public class Board
         int boardWidth = GetWidth();
         int boardHeight = GetHeight();
 
-        JewelKind[,] JewelBoard = new JewelKind[boardWidth, boardHeight];
+        JewelKind[,] jewelBoard = new JewelKind[boardWidth, boardHeight];
 
         // Note: X axis first, y axis second
         for (int y = 0; y < boardHeight; y++)
         {
             for (int x = 0; x < boardWidth; x++)
             {
-                JewelBoard[x, y] = GetJewel(x, y);
+                jewelBoard[x, y] = GetJewel(x, y);
             }
         }
 
@@ -72,28 +72,32 @@ public class Board
         Move bestMove = new Move();
         Array directions = Enum.GetValues(typeof(MoveDirection));
         
+        // Check all gems in board
         for (int y = 0; y < boardHeight; y++)
         {
             for (int x = 0; x < boardWidth; x++)
             {
+                // Check all directions gem can take
                 foreach (MoveDirection direction in directions)
                 {
-                    // Can we move current gem in direction
-                    // Borders check
+                    // If we're trying to move towards board border, skip direction
                     bool leftCheck = (direction == MoveDirection.Left && x == 0);
                     bool rightCheck = (direction == MoveDirection.Right && x == boardWidth-1);
                     bool upCheck = (direction == MoveDirection.Up && y == 0);
                     bool downCheck = (direction == MoveDirection.Down && x == boardHeight-1);
-
                     if (leftCheck || rightCheck || upCheck || downCheck)
                     {
                         continue;
                     }
 
-                    // Since gem could be moved in this direction, check chain of gems
-                    // Check connected gems 
-                    int connectedGemCount = /*Check Connection*/ 0;
+                    // Since gem could be moved in this direction, check chain of gems for this Move
+                    Move currentMove = new Move();
+                    currentMove.x = x;
+                    currentMove.y = y;
+                    currentMove.direction = direction;
+                    int connectedGemCount = GetPointsFromProjectedMove(currentMove,jewelBoard);
 
+                    // If points are higher, make new best move
                     if (connectedGemCount > currentHighestPossiblePoints)
                     {
                         currentHighestPossiblePoints = connectedGemCount;
@@ -125,7 +129,7 @@ public class Board
         HashSet<Vector2Int> visitedNodes = new HashSet<Vector2Int>();
         searchQueue.Enqueue(currentNode);
 
-        //Implement tree search algorithm
+        // Breadth first tree search
         foreach (KeyValuePair<Vector2Int, MoveDirection> node in searchQueue)
         {
             Array directions = Enum.GetValues(typeof(MoveDirection));
@@ -134,25 +138,29 @@ public class Board
 
             foreach (MoveDirection direction in directions)
             {
-                if (direction == node.Value)
+                //Don't move in direction travelled from
+                MoveDirection directionTravelled = node.Value;
+                if (direction == directionTravelled)
                 {
                     continue;
                 }
+                
+                // If we're trying to move towards board border, skip direction
                 bool leftCheck = (direction == MoveDirection.Left && x == 0);
                 bool rightCheck = (direction == MoveDirection.Right && x == boardWidth - 1);
                 bool upCheck = (direction == MoveDirection.Up && y == 0);
                 bool downCheck = (direction == MoveDirection.Down && x == boardHeight - 1);
-
                 if (leftCheck || rightCheck || upCheck || downCheck)
                 {
                     continue;
                 }
 
-                Vector2Int position = NewPositionAfterMove(direction, x, y);
-
-                if (jewelBoard[position.x, position.y] == desiredJewel)
+                // Check connected gem is of same type as root
+                Vector2Int positionOfGemToCheck = NewPositionAfterMove(direction, x, y);
+                if (jewelBoard[positionOfGemToCheck.x, positionOfGemToCheck.y] == desiredJewel)
                 {
-                    if (visitedNodes.Add(position))
+                    // Add gem to queue if not already searched
+                    if (visitedNodes.Add(positionOfGemToCheck))
                     {
                         KeyValuePair<Vector2Int , MoveDirection> newNode = new KeyValuePair<Vector2Int, MoveDirection> (position, GetOppositeDirection(direction));
                         searchQueue.Enqueue(newNode);
