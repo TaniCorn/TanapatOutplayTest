@@ -7,22 +7,45 @@ using UnityEngine;
 public class DebugBoard : MonoBehaviour
 {
     JewelKind[,] debugBoard;
+    const int minimumConnections = 2;
+
     // Start is called before the first frame update
     void Start()
     {
+        //debugBoard = new JewelKind[3, 3];
+        //debugBoard[0, 0] = JewelKind.Red;
+        //debugBoard[0, 1] = JewelKind.Green;
+        //debugBoard[0, 2] = JewelKind.Green;
+
+        //debugBoard[1, 0] = JewelKind.Green;
+        //debugBoard[1, 1] = JewelKind.Blue;
+        //debugBoard[1, 2] = JewelKind.Blue;
+
+        //debugBoard[2, 0] = JewelKind.Red;
+        //debugBoard[2, 1] = JewelKind.Red;
+        //debugBoard[2, 2] = JewelKind.Green;
+
+        //Move move = new Move();
+        //move.x = 0;
+        //move.y = 0;
+        //move.direction = MoveDirection.Right;
+
+        //int points = GetPointsFromProjectedMove(move, debugBoard);
+
+        //CalculateBestMoveForBoard();
+
         debugBoard = new JewelKind[3, 3];
         debugBoard[0, 0] = JewelKind.Red;
         debugBoard[0, 1] = JewelKind.Green;
         debugBoard[0, 2] = JewelKind.Green;
 
         debugBoard[1, 0] = JewelKind.Green;
-        debugBoard[1, 1] = JewelKind.Blue;
-        debugBoard[1, 2] = JewelKind.Blue;
+        debugBoard[1, 1] = JewelKind.Red;
+        debugBoard[1, 2] = JewelKind.Red;
 
         debugBoard[2, 0] = JewelKind.Red;
-        debugBoard[2, 1] = JewelKind.Red;
+        debugBoard[2, 1] = JewelKind.Green;
         debugBoard[2, 2] = JewelKind.Green;
-
 
         Move move = new Move();
         move.x = 0;
@@ -84,7 +107,6 @@ public class DebugBoard : MonoBehaviour
         // Make board information
         int boardWidth = GetWidth();
         int boardHeight = GetHeight();
-        const int minimumConnections = 2;
 
         JewelKind[,] jewelBoard = new JewelKind[boardWidth, boardHeight];
 
@@ -97,11 +119,10 @@ public class DebugBoard : MonoBehaviour
             }
         }
 
-        // Moves must gain more than 2 points
-        int currentHighestPossiblePoints = minimumConnections; 
+        int currentHighestPossiblePoints = minimumConnections;
         Move bestMove = new Move();
         Array directions = Enum.GetValues(typeof(MoveDirection));
-        
+
         // Check all gems in board
         for (int y = 0; y < boardHeight; y++)
         {
@@ -112,9 +133,9 @@ public class DebugBoard : MonoBehaviour
                 {
                     // If we're trying to move towards board border, skip direction
                     bool leftCheck = (direction == MoveDirection.Left && x == 0);
-                    bool rightCheck = (direction == MoveDirection.Right && x == boardWidth-1);
+                    bool rightCheck = (direction == MoveDirection.Right && x == boardWidth - 1);
                     bool upCheck = (direction == MoveDirection.Up && y == 0);
-                    bool downCheck = (direction == MoveDirection.Down && y == boardHeight-1);
+                    bool downCheck = (direction == MoveDirection.Down && y == boardHeight - 1);
                     if (leftCheck || rightCheck || upCheck || downCheck)
                     {
                         continue;
@@ -125,24 +146,12 @@ public class DebugBoard : MonoBehaviour
                     currentMove.x = x;
                     currentMove.y = y;
                     currentMove.direction = direction;
-                    int connectedGemCount = GetPointsFromProjectedMove(currentMove, jewelBoard);
-                    // Check gem that got moved
-                    Move otherGemMovement = new Move();
-                    Vector2Int startPosition = NewPositionAfterMove(direction, x, y);
-                    otherGemMovement.x = startPosition.x;
-                    otherGemMovement.y = startPosition.y;
-                    otherGemMovement.direction = GetOppositeDirection(direction);
-                    int otherGemCount = GetPointsFromProjectedMove(otherGemMovement, jewelBoard);
-
-                    // Add gems if they have made a valid connection
-                    int totalPointsGainedFromMove = 0;
-                    totalPointsGainedFromMove += otherGemCount > minimumConnections ? otherGemCount : 0;
-                    totalPointsGainedFromMove += connectedGemCount > minimumConnections ? connectedGemCount : 0;
+                    int totalPointsFromMove = GetPointsFromProjectedMove(currentMove, jewelBoard);
 
                     // If points are higher, make new best move
-                    if (totalPointsGainedFromMove > currentHighestPossiblePoints)
+                    if (totalPointsFromMove > currentHighestPossiblePoints)
                     {
-                        currentHighestPossiblePoints = totalPointsGainedFromMove;
+                        currentHighestPossiblePoints = totalPointsFromMove;
                         bestMove.x = x;
                         bestMove.y = y;
                         bestMove.direction = direction;
@@ -154,12 +163,36 @@ public class DebugBoard : MonoBehaviour
         return bestMove;
     }
 
-    int GetPointsFromProjectedMove(Move moveToExecute,  JewelKind[,] jewelBoard)
+    int GetPointsFromProjectedMove(Move moveToExecute, JewelKind[,] jewelBoard)
+    {
+        // First Gem
+        JewelKind gemKind = jewelBoard[moveToExecute.x, moveToExecute.y];
+
+        // Create secondary gem movement
+        Vector2Int otherGemPosition = NewPositionAfterMove(moveToExecute.direction, moveToExecute.x, moveToExecute.y);
+        JewelKind otherGemKind = jewelBoard[otherGemPosition.x, otherGemPosition.y];
+        Move otherGemMovement = new Move();
+        otherGemMovement.x = otherGemPosition.x;
+        otherGemMovement.y = otherGemPosition.y;
+        otherGemMovement.direction = GetOppositeDirection(moveToExecute.direction);
+
+        // Find connected gems to primary gem, and then secondary gem movement
+        int connectedGemCount = GetPointsFromConnectedGem(moveToExecute, gemKind, jewelBoard);
+        int otherGemCount = GetPointsFromConnectedGem(otherGemMovement, otherGemKind, jewelBoard);
+
+        // Add gems if they have made a valid connection
+        int totalPointsGainedFromMove = 0;
+        totalPointsGainedFromMove += otherGemCount > minimumConnections ? otherGemCount : 0;
+        totalPointsGainedFromMove += connectedGemCount > minimumConnections ? connectedGemCount : 0;
+
+        return totalPointsGainedFromMove;
+    }
+
+    int GetPointsFromConnectedGem(Move moveToExecute, JewelKind kind, JewelKind[,] jewelBoard)
     {
         int totalPoints = 1;
         int boardWidth = GetWidth();
         int boardHeight = GetHeight();
-        JewelKind desiredJewel = jewelBoard[moveToExecute.x, moveToExecute.y];
 
         // Setup first node after moving gem
         Vector2Int startPosition = NewPositionAfterMove(moveToExecute);
@@ -188,7 +221,7 @@ public class DebugBoard : MonoBehaviour
                 {
                     continue;
                 }
-                
+
                 // If we're trying to move towards board border, skip direction
                 bool leftCheck = (direction == MoveDirection.Left && x == 0);
                 bool rightCheck = (direction == MoveDirection.Right && x == boardWidth - 1);
@@ -201,12 +234,12 @@ public class DebugBoard : MonoBehaviour
 
                 // Check connected gem is of same type as root
                 Vector2Int positionOfGemToCheck = NewPositionAfterMove(direction, x, y);
-                if (jewelBoard[positionOfGemToCheck.x, positionOfGemToCheck.y] == desiredJewel)
+                if (jewelBoard[positionOfGemToCheck.x, positionOfGemToCheck.y] == kind)
                 {
                     // Add gem to queue if not already searched
                     if (visitedNodes.Add(positionOfGemToCheck))
                     {
-                        KeyValuePair<Vector2Int , MoveDirection> newNode = new KeyValuePair<Vector2Int, MoveDirection> (positionOfGemToCheck, GetOppositeDirection(direction));
+                        KeyValuePair<Vector2Int, MoveDirection> newNode = new KeyValuePair<Vector2Int, MoveDirection>(positionOfGemToCheck, GetOppositeDirection(direction));
                         searchQueue.Enqueue(newNode);
                         totalPoints++;
                     }
