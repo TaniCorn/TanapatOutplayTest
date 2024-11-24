@@ -1,6 +1,8 @@
 # TanapatOutplayTest
  Tanapat Somrid application remote test for Outplay Entertainment.
 
+ Below has been a log of my entire process, from the planning stage, to work logs, to the tasks themselves, and to the retrospect of the tasks. 
+
 # Planning
 I'll be outlining my intial plans in the readme before getting to work on the development. This is to plan for the time that I have, follow a standard for github, and be an easy reference for myself when thinking of how I want to complete this test.
 
@@ -12,6 +14,7 @@ Just to keep an accurate track of the time I spent on each task and see where I'
 - 23/11/24 (1 hour) Task 2, figuring out solution and planning
 - 23/11/24 (1.5 hours) Task 2, implementing the board searching and putting placeholder functionality for the tree search
 - 23/11/24 (1.5 hours) Task 2, thinking of how to best implement the tree search, and then implementing said tree
+- 23/11/24 (4 hours) Task 2, testing, code cleanup, and fixes
 
 ## Github Standard
 I'll be completing the tasks one after the other, as such I'll be creating a branch for each task and merging it back into main when complete.
@@ -51,6 +54,7 @@ Given the above, it should take me 17 hours to complete the 3 tasks. So I may or
 This is a retrospect after all the tasks
 
 - Task 1 (4.5 hours), I'm pretty happy with my final solution and my method of getting there. After a good initial plan of using max height to determine the initial condition. I was a bit too excited to use max x distance that it blindsided me for 20 minutes, until I realised it was the wrong solution. It took a bit of time to think about what I could use as my mind was avoiding *time*step, but realised that time is still a necessary factor and it popped into my head about finding the intersection point, I could use a linear movement equation. Using SUVAT I then was pretty happy with the theoretical solution, but as I expected there were bugs, but it didn't take too long to find out what was wrong, and it was just a matter of developing the solution to properly consider negative velocities.
+- Task 2 (8 hours), I wish it didn't take me as long, but I think it was almost unaviodable. I had a good guess of the problem, and did good enough planning to account for a lot of scenarios, albeit one consideration. However the testing and code cleanup was the one thing that really increased the time. Despite these points, I'm pretty happy with the solution. I think the code readability is pretty good, which is my main focus for more complicated functionality.
 
 # Task 1
 Task 1 requires me to write an implementation for a reusable function with a given signature which will predict the position of a ball when it reaches the specified height h, for a 2D game about a ball bouncing within a box with no top and with an initial position and velocity, which is affected by gravity. If the ball hits the bottom, it won't bounce. The floor exists at X = 0.
@@ -195,5 +199,25 @@ foreach queue node
 pop queue
 end queue loop
 ```
+
+## Testing and missing functionality
+Doing some testing showed  2 bugs:
+1. Can't dequeue on a foreach loop
+2. Accessed x for height instead of y
+
+These weren't particularly hard to fix and got resolved quickly, and the program seems to work quite well.
+However, one scenario popped into mind that I didn't account for and that is swapping a gem, and it get's 3 points, and the swapped gem also gets 3 points. Leading to an overall 6 points from that move. This is not accounted for in the current algorithm.
+
+![image](https://github.com/user-attachments/assets/bae2357d-d5b4-4d47-8bd9-b96980710af5)
+
+Currently the algorithm will only count the gem that we moved, not the gem that gets swapped to our position.
+
+Just to see if I could get a quick solution up, I tried simply adding up the opposite move as well, which does work. See commit 3805813 , dev-task2 adding gem moved to calculations. However it makes the GetPointsFromProjectedMove function a bit of a lie, as that is the function that should really be handling the total points. So it was changed to be that way instead. See commit d8d8f29, dev-task2 moved double gem search to GetPointsFromProjectedMove.
+
+## Code cleanup and empty gem fix
+The longest part of this entire process was probably just trying to clean up the code to make sure it is as clear as possible, as it's quite a lengthy solution. During of which I realised that I wasn't checking if the gem was empty, and so the solution could count empty gems as a valid move.
+
+
+Overall, I'm happy with the end solution. I think it's fairly readable, which is probably the most important thing for a heavy chunk of code like this. I believe it's pretty robust and it works as intended. The improvement that I could of made was to reduce the redundant checks. Since I came to the realisation quite late that my solution wasn't taking into account the swapped gem, the checking of all gems could've been mitigated, by checking the swapped gem, and then not going over that one. 
 
 # Task 3
