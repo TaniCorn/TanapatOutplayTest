@@ -57,6 +57,7 @@ public class Board
         // Make board information
         int boardWidth = GetWidth();
         int boardHeight = GetHeight();
+        const int minimumConnections = 2;
 
         JewelKind[,] jewelBoard = new JewelKind[boardWidth, boardHeight];
 
@@ -69,8 +70,7 @@ public class Board
             }
         }
 
-        // Moves must gain more than 2 points
-        int currentHighestPossiblePoints = 2;
+        int currentHighestPossiblePoints = minimumConnections;
         Move bestMove = new Move();
         Array directions = Enum.GetValues(typeof(MoveDirection));
         
@@ -98,11 +98,23 @@ public class Board
                     currentMove.y = y;
                     currentMove.direction = direction;
                     int connectedGemCount = GetPointsFromProjectedMove(currentMove,jewelBoard);
+                    // Check gem that got moved
+                    Move otherGemMovement = new Move();
+                    Vector2Int startPosition = NewPositionAfterMove(direction, x, y);
+                    otherGemMovement.x = startPosition.x;
+                    otherGemMovement.y = startPosition.y;
+                    otherGemMovement.direction = GetOppositeDirection(direction);
+                    int otherGemCount = GetPointsFromProjectedMove(otherGemMovement, jewelBoard);
+
+                    // Add gems if they have made a valid connection
+                    int totalPointsGainedFromMove = 0; 
+                    totalPointsGainedFromMove += otherGemCount > minimumConnections ? otherGemCount : 0;
+                    totalPointsGainedFromMove += connectedGemCount > minimumConnections ? connectedGemCount : 0;
 
                     // If points are higher, make new best move
-                    if (connectedGemCount > currentHighestPossiblePoints)
+                    if (totalPointsGainedFromMove > currentHighestPossiblePoints)
                     {
-                        currentHighestPossiblePoints = connectedGemCount;
+                        currentHighestPossiblePoints = totalPointsGainedFromMove;
                         bestMove.x = x;
                         bestMove.y = y;
                         bestMove.direction = direction;
