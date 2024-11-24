@@ -4,8 +4,35 @@ using System.Collections.Generic;
 using UnityEditor.Search;
 using UnityEngine;
 
-public class Board
+public class DebugBoard : MonoBehaviour
 {
+    JewelKind[,] debugBoard;
+    // Start is called before the first frame update
+    void Start()
+    {
+        debugBoard = new JewelKind[3, 3];
+        debugBoard[0, 0] = JewelKind.Red;
+        debugBoard[0, 1] = JewelKind.Green;
+        debugBoard[0, 2] = JewelKind.Green;
+
+        debugBoard[1, 0] = JewelKind.Green;
+        debugBoard[1, 1] = JewelKind.Blue;
+        debugBoard[1, 2] = JewelKind.Blue;
+
+        debugBoard[2, 0] = JewelKind.Red;
+        debugBoard[2, 1] = JewelKind.Red;
+        debugBoard[2, 2] = JewelKind.Green;
+
+
+        Move move = new Move();
+        move.x = 0;
+        move.y = 0;
+        move.direction = MoveDirection.Right;
+
+        int points = GetPointsFromProjectedMove(move, debugBoard);
+
+        CalculateBestMoveForBoard();
+    }
 
     enum JewelKind
     {
@@ -35,19 +62,19 @@ public class Board
 
     int GetWidth()
     {
-        return 10;
+        return 3;
     }
     int GetHeight()
     {
-        return 10;
+        return 3;
     }
     JewelKind GetJewel(int x, int y)
     {
-        return JewelKind.Empty;
+        return debugBoard[x,y];
     }
     void SetJewel(int x, int y, JewelKind kind)
     {
-
+        //Not needed for debugging
     }
 
     Move CalculateBestMoveForBoard()
@@ -70,7 +97,7 @@ public class Board
         }
 
         // Moves must gain more than 2 points
-        int currentHighestPossiblePoints = 2;
+        int currentHighestPossiblePoints = 2; 
         Move bestMove = new Move();
         Array directions = Enum.GetValues(typeof(MoveDirection));
         
