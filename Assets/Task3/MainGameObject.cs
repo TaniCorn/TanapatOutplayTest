@@ -27,6 +27,8 @@ public class MainGameObject : MonoBehaviour
 
     void Start()
     {
+        this.transform.position = Vector3.zero;
+
         if (points == null)
         {
             Debug.LogError("No point has been specified");
