@@ -4,31 +4,41 @@ using UnityEngine;
 
 public class RandomObstacleSpawner : MonoBehaviour
 {
-    [SerializeField] GameObject randomObstacleGO;
+    [Header("Required")]
+    [SerializeField][Tooltip("Ensure collision channel is on obstacle")] GameObject randomObstaclePrefab;
+
+    [Header("Parameters")]
     [SerializeField] Transform lowerBoundary;
     [SerializeField] Transform upperBoundary;
     [SerializeField] int amountOfObstaclesToSpawn = 100;
 
+    [Header("References")]
+    List<GameObject> spawnedGO;
+
     void Start()
     {
-        if (randomObstacleGO == null)
+        if (randomObstaclePrefab == null)
         {
             Debug.LogError("No obstacle gameobject prefab has been given");
             return;
         }
 
+        spawnedGO = new List<GameObject>();
         if (lowerBoundary == null || upperBoundary == null)
         {
             CreateBoundaryObjects();
         }
-
         for (int i = 0; i < amountOfObstaclesToSpawn; i++)
         {
             Vector3 randomPos;
             randomPos.x = Random.Range(lowerBoundary.position.x, upperBoundary.position.x);
             randomPos.y = Random.Range(lowerBoundary.position.y, upperBoundary.position.y);
             randomPos.z = Random.Range(lowerBoundary.position.z, upperBoundary.position.z);
-            Instantiate(randomObstacleGO, randomPos, Quaternion.identity);
+
+            // Adding to transform to keep the heirarchy clean and allow mass movement of objects.
+            GameObject GO = Instantiate(randomObstaclePrefab, randomPos, Quaternion.identity);
+            GO.transform.parent = transform;
+            spawnedGO.Add(GO);
         }
     }
 

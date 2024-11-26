@@ -249,8 +249,6 @@ MonoBehaviour:
   - {fileID: 4618100307865520146}
   - {fileID: 5109118367317679619}
   - {fileID: 900990761242567943}
-  deathAudio: {fileID: 0}
-  deathParticle: {fileID: 0}
   speed: 1
   distanceToPointThreshold: 0.1
 --- !u!82 &971381421651119945
