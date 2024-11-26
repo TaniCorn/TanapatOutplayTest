@@ -5,9 +5,14 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent (typeof(Collider))]
+[RequireComponent (typeof(AudioSource))]
+[RequireComponent (typeof (ParticleSystem))]
+[RequireComponent (typeof (MeshRenderer))]
 public class MainGameObject : MonoBehaviour
 {
     [SerializeField] List<Transform> points;
+    [SerializeField] AudioSource deathAudio;
+    [SerializeField] ParticleSystem deathParticle;
     [SerializeField] float speed = 1.0f;
     [SerializeField] float distanceToPointThreshold = 0.5f;
 
@@ -16,6 +21,8 @@ public class MainGameObject : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        deathAudio = GetComponent<AudioSource>();
+        deathParticle = GetComponent<ParticleSystem>();
     }
 
     void Start()
@@ -26,6 +33,7 @@ public class MainGameObject : MonoBehaviour
         }
         else
         {
+            // So points do not move with this object
             foreach (Transform t in points)
             {
                 t.parent = null;
@@ -63,17 +71,17 @@ public class MainGameObject : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         // Should be obstacles only
-
         RemoveSelf();
     }
 
     private void RemoveSelf()
     {
-        // Spawn Sound
-        // Spawn VFX
+        StopCoroutine("MoveToPoint");
+        GetComponent<MeshRenderer>().enabled = false;
+        deathAudio.Play();
+        deathParticle.Play();
 
-        // Destroy(gameObject);
-        Debug.Log("Hit");
+        Destroy(this.gameObject, 5.0f);
     }
 
     [ContextMenu("Create a point")]
