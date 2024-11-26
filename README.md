@@ -14,7 +14,8 @@ Just to keep an accurate track of the time I spent on each task and see where I'
 - 23/11/24 (1 hour) Task 2, figuring out solution and planning
 - 23/11/24 (1.5 hours) Task 2, implementing the board searching and putting placeholder functionality for the tree search
 - 23/11/24 (1.5 hours) Task 2, thinking of how to best implement the tree search, and then implementing said tree
-- 23/11/24 (4 hours) Task 2, testing, code cleanup, and fixes
+- 24/11/24 (4 hours) Task 2, testing, code cleanup, and fixes
+- 26/11/24 (3 hours) Task 3, random objects spawn, main game object movement
 
 ## Github Standard
 I'll be completing the tasks one after the other, as such I'll be creating a branch for each task and merging it back into main when complete.
@@ -221,3 +222,38 @@ The longest part of this entire process was probably just trying to clean up the
 Overall, I'm happy with the end solution. I think it's fairly readable, which is probably the most important thing for a heavy chunk of code like this. I believe it's pretty robust and it works as intended. The improvement that I could of made was to reduce the redundant checks. Since I came to the realisation quite late that my solution wasn't taking into account the swapped gem, the checking of all gems could've been mitigated, by checking the swapped gem, and then not going over that one. 
 
 # Task 3
+This task is to make a simple unity scene
+- There are 100 objects that are spawned at random positions that can collide with a main game object.
+- The main game object moves at a constant speed, starting at (0, 0, 0), towards 3 points (P1, P2, P3) that can be changed by a designer.
+- At arrival at each point, the game object should begin movement toward the next point.
+- On arrival at the final point or if a collision is detected, the main game object should be removed from the scene, play a sound effect and show a particle effect.
+- Note that the game uses the physics system provided by Unity and the collisions are reported by Unity
+
+# Initial Plan
+When I first read the 100 objects, I though I might have to do something with object pooling, but it doesn't seem applicable here. 
+I would ideally like to have made the majority of this scene via editor, so that the 100 objects don't spawn in runtime, however I don't know how to do that with unity yet without the use of Context functions. I could just follow a simple tutorial but I don't think that's what is wanted of me.
+
+I think I'll just take this at face value, and go with the following:
+- Spawn 100 random objects on start, with serialized fields for object to spawn, boundaries of spawning, and amount to spawn
+- Move main object from 0 to P1, P2, P3 via coroutines, or in a less idealistic scenario, using the tick function. Serialized fields will be speed and P points. With required components being Rigidbody and collision
+- Collision will be handled by unity
+
+Just a thought that came up is that I could predict when the main game object will arrive at the point instead of checking every frame, I probably won't do that just because you can change the points position during runtime, and that would mess things up if a scenario like that did happen for whatever reason.
+
+
+I had a bit of trouble with the bit of code below. As the main object moves towards the point, the distance to point should be shrinking. However, for some reason, distanceToPoint is always the same value. That is unless I put the Distance calculation directly into an if statement.
+```
+            float distanceToPoint = Vector3.Distance(this.transform.position, pointsToMoveTo[0].position);
+```
+Had a quick search and it appears that it's due to the coroutines holding onto local values over frames, this did confuse me for a while, I didn't know this.
+
+## Bullet
+In case the speed is really high, there is a chance on 2 frames, we miss the point boundary. 
+To mitigate this, I'm thinking that I can check the sign of the initial direction, and check the sign during movement. If it flips, then we have gone past it and should be heading in the new direction.
+- I could use the cross product to check the normal direction
+- I think I could use the dot product
+- I could just check if the normalised direction is still the same
+
+I believe just checking the normalised direction should be the cheapest operation
+
+Regarding the design issues on this, I could be implementing this in a very mathematical way so that if we were to reach the target in the next frame, by using prediction, we don't go past it, but go towards the next point from that point by the amount we would've missed. But I do think that's overkill considering the given brief of a simple unity project.
