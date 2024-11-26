@@ -16,6 +16,7 @@ Just to keep an accurate track of the time I spent on each task and see where I'
 - 23/11/24 (1.5 hours) Task 2, thinking of how to best implement the tree search, and then implementing said tree
 - 24/11/24 (4 hours) Task 2, testing, code cleanup, and fixes
 - 26/11/24 (3 hours) Task 3, random objects spawn, main game object movement
+- 26/11/24 (1 hour) Task 3, testing and cleaning up
 
 ## Github Standard
 I'll be completing the tasks one after the other, as such I'll be creating a branch for each task and merging it back into main when complete.
@@ -56,6 +57,10 @@ This is a retrospect after all the tasks
 
 - Task 1 (4.5 hours), I'm pretty happy with my final solution and my method of getting there. After a good initial plan of using max height to determine the initial condition. I was a bit too excited to use max x distance that it blindsided me for 20 minutes, until I realised it was the wrong solution. It took a bit of time to think about what I could use as my mind was avoiding *time*step, but realised that time is still a necessary factor and it popped into my head about finding the intersection point, I could use a linear movement equation. Using SUVAT I then was pretty happy with the theoretical solution, but as I expected there were bugs, but it didn't take too long to find out what was wrong, and it was just a matter of developing the solution to properly consider negative velocities.
 - Task 2 (8 hours), I wish it didn't take me as long, but I think it was almost unaviodable. I had a good guess of the problem, and did good enough planning to account for a lot of scenarios, albeit one consideration. However the testing and code cleanup was the one thing that really increased the time. Despite these points, I'm pretty happy with the solution. I think the code readability is pretty good, which is my main focus for more complicated functionality.
+- Task 3 (4 hours), I'm actually the most worried about this one. I think I have done some bad practice regarding how gameplay code should be interacting with the scene and designers, but given the information, I think I've done the best I can. I've tried making it as foolproof as possible without overloading the scripts with a bunch of checks, so if it was being setup without the prefabs, someone might not manage to set up the whole thing correctly.
+
+
+Overall I'm pretty happy with what I've done.
 
 # Task 1
 Task 1 requires me to write an implementation for a reusable function with a given signature which will predict the position of a ball when it reaches the specified height h, for a 2D game about a ball bouncing within a box with no top and with an initial position and velocity, which is affected by gravity. If the ball hits the bottom, it won't bounce. The floor exists at X = 0.
@@ -254,6 +259,12 @@ To mitigate this, I'm thinking that I can check the sign of the initial directio
 - I think I could use the dot product
 - I could just check if the normalised direction is still the same
 
-I believe just checking the normalised direction should be the cheapest operation
+I believe just checking the normalised direction should be the cheapest operation.
 
 Regarding the design issues on this, I could be implementing this in a very mathematical way so that if we were to reach the target in the next frame, by using prediction, we don't go past it, but go towards the next point from that point by the amount we would've missed. But I do think that's overkill considering the given brief of a simple unity project.
+
+
+
+There wasn't much to comment on regarding the final bits, which was just testing, renaming, and cleaning up.
+Overall, I'm ok with what has been made. I'm not as familiar with unity as I'd like to be so I'm sure that I've done some bad practice somewhere regarding how scenes should be structured with code as well.
+
